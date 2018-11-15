@@ -76,16 +76,23 @@ app.get("/scrape", function(req, res) {
                 })
                 .catch(function (err) {
                     res.json(err);
-                })
+                });
         });
     });
 });
 
 app.get("/articles/", function(req, res) {
     db.Article.find({})
+        .populate("comments")
         .then(dbArticles => res.json(dbArticles))
         .catch(err => res.json(err));
 });
+
+app.get("/comment/:id", function(req, res) {
+    db.Comment.find({_id: req.params.id})
+        .then(dbComment => res.json(dbComment))
+        .catch(err => res.json(err));
+})
 
 // Route for saving/updating an Article's associated Note
 app.post("/articles/:id", function (req, res) {
@@ -94,7 +101,7 @@ app.post("/articles/:id", function (req, res) {
     // save the new note that gets posted to the Notes collection
     // then find an article from the req.params.id
     // and update it's "note" property with the _id of the new note
-    db.Comment.create(releaseEvents.body)
+    db.Comment.create(req.body)
         .then(comment => {
             db.Article.findOneAndUpdate(
                 { "_id": req.params.id },
